@@ -58,11 +58,11 @@ To run the tests
 ---
 
 ## Project description
-A input to type the name of a new item
+Input to type the name of new item
 
-A button to create a item with the name in the input
+Button to create item with the name in the input
 
-A list with each item in a row and a button for remove each item
+List with each item in a row and a button for remove each item
 
 ![](./public/list.png)
 
@@ -76,7 +76,7 @@ function addToList(){
 }
 ```
 
-**Function to remove the item to the list**
+**Function for removing item to list**
 ```typescript
 function removeFromList(removeItem: string){
     setTimeout(() => {
@@ -84,7 +84,7 @@ function removeFromList(removeItem: string){
     }, 500)
 }
 ```
->The timeout in the functions is to simulate a async api call
+>The timeout in the functions for simulate an async API call
 ---
 
 ## Tests examples
@@ -134,7 +134,7 @@ it('should be able to add new item to the list', async () => {
 })
 ```
 
-A simple test example to validate if a item was removed.
+Simple test example to validate if a item was removed.
 ```typescript
 it('should be able to remove item to the list', async () => {
     const { queryByText, getAllByText, getByPlaceholderText, debug } = render(<List initialItems={['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet']}/>)
