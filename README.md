@@ -1,46 +1,158 @@
-# Getting Started with Create React App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# A simple project of a list items just to exercise Jest knowlange
 
-## Available Scripts
 
-In the project directory, you can run:
+### This project was create using react
+    npx create-react-app test-with-jest --template typescript
 
-### `npm start`
+### CLI's used to add Jest to the project
+    npm i jest -D
+    npx jest —init
+    npm i ts-node -D
+    npm i @types/jest
+    npm i @swc/core @swc/jest -D
+    npm i @testing-library/react @testing-library/jest-dom @testing-library/user-event -D
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+**After install swc add this settings in the jest.config.ts file**
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+```typescript
+transform: {
+    "^.+\\.(t|j)sx?$": [
+      "@swc/jest",
+      {
+        jsc: {
+          parser: {
+            syntax: "typescript",
+            tsx: true,
+            decorators: true,
+          },
+          keepClassNames: true,
+          transform: {
+            legacyDecorator: true,
+            decoratorMetadata: true,
+            react: {
+              runtime: 'automatic'
+            },
+          },
+        },
+        module:{
+          type: 'es6',
+          noInterop: false,
+        },
+      },
+    ],
+  },
+```
 
-### `npm test`
+**To keep the tests executing**
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Add --watchAll to test script on package.json
+```json
+"scripts": {
+    "test": "jest --watchAll",
+  },
+```
+To run the tests
 
-### `npm run build`
+    npm test --watchAll
+---
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Project description
+A input to type the name of a new item
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+A button to create a item with the name in the input
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+A list with each item in a row and a button for remove each item
 
-### `npm run eject`
+![](./public/list.png)
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+**Function to add a new item to the list**
+```typescript
+function addToList(){
+    setTimeout(() => {
+        setList(state => [...state, newItem]);
+        setNewItem('');
+    }, 500)
+}
+```
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+**Function to remove the item to the list**
+```typescript
+function removeFromList(removeItem: string){
+    setTimeout(() => {
+        setList(state => state.filter(item => item !== removeItem));
+    }, 500)
+}
+```
+>The timeout in the functions is to simulate a async api call
+---
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+## Tests examples
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+Default way to test if there is a element with "orange" text content.
+```typescript
+test('renders learn react link', () => {
+  render(<List initialItems={['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet']}/>);
+  const linkElement = screen.getByText("orange");
+  expect(linkElement).toBeInTheDocument();
+});
+```
 
-## Learn More
+**Add a describe to the component that is testing.**
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Test to validate if there are a element with "blue" text content and an element with "green" text content.
+```typescript
+describe('List Component', () =>{
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+    it('should render list items', () => {
+        const { getByText } = render(<List initialItems={['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet']}/>)
+
+        expect(getByText('blue')).toBeInTheDocument()
+        expect(getByText('green')).toBeInTheDocument()
+    });
+})
+```
+
+Using events in test to validate create feature.
+```typescript
+it('should be able to add new item to the list', async () => {
+    const { getByText, getByPlaceholderText, debug } = render(<List initialItems={[]}/>)
+
+    const inputElement = getByPlaceholderText('New Item');
+    const addButton = getByText('Add');
+
+    debug() // To show the DOM in the test console in this moment
+    
+    userEvent.type(inputElement, 'New')
+    userEvent.click(addButton);
+
+    debug() // To show the DOM in the test console in this moment
+
+    await waitFor(() => { // wait for a possible api delay
+      expect(getByText('New')).toBeInTheDocument()
+    })
+})
+```
+
+A simple test example to validate if a item was removed.
+```typescript
+it('should be able to remove item to the list', async () => {
+    const { queryByText, getAllByText, getByPlaceholderText, debug } = render(<List initialItems={['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet']}/>)
+
+    const removeButtons = getAllByText('Remove');
+
+    debug()
+    
+    userEvent.click(removeButtons[0]);
+
+    debug()
+
+    await waitForElementToBeRemoved(() => { // Two ways to do the same thing
+      return queryByText('red')
+    })
+
+    await waitFor(() => { // Two ways to do the same thing
+      expect(queryByText('red')).not.toBeInTheDocument()
+    })
+})
+```
